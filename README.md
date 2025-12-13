@@ -101,8 +101,7 @@ pep_ids, hla_ids = tokenize_pad(
 ```
 
 
-## 4. Quick Start: TransHLA2.0-BIND (Hugging Face)
-
+## 4. Quick Start: TransHLA2.0-BIND
 TransHLA2.0-BIND is a minimal Hugging Face-compatible PyTorch model for peptide–HLA binding classification using ESM. It resolves allele-specific binding/presentation with quantitative supervision integrating eluted ligands and IC50-annotated pairs, achieving **AUROC of 96.2%** and **AUPRC of 95.2%** on combined BA/EL evaluation.
 
 Inference workflow:
@@ -202,7 +201,7 @@ The model returns (logits, features). Apply softmax only at inference time to ob
 Keep fixed PEP_LEN and HLA_LEN consistent with training.
 
 
-## 5. Quick Start: TransHLA2.0-IM (Research Model)
+## 5. Quick Start: TransHLA2.0-IM
 
 TransHLA2.0-IM identifies immunogenic ligands from rigorously curated human T cell assays. The model architecture leverages:
 
