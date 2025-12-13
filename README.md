@@ -1,13 +1,24 @@
 ## TransHLA2.0 — Tutorial and README
 
-A modular ESM-based pipeline for peptide–HLA binding prediction, offering:
-- TransHLA2.0-PRE: standardization and preprocessing
-- TransHLA2.0-BIND: minimal Hugging Face-compatible binding classifier
-- TransHLA2.0-IM: research model with cross-attention/CNN branches
-- Training scripts to train your own models
+High-throughput screening on HLA class I epitopes underpins neoantigen vaccines development, T cell therapies, and frontline responses to emerging pathogens. However, practical pipelines still struggle to prioritize true ligands and immunogenic targets at proteome scale. 
 
-Status:
-- Published on Hugging Face: TransHLA2.0-BIND (SkywalkerLu/TransHLA2.0-BIND)
+We introduce **TransHLA2.0**, a compact three-stage framework that addresses these challenges:
+
+- **TransHLA2.0-PRE**: Enriches epitope-like peptides in peptide-only setting with standardization and preprocessing utilities
+- **TransHLA2.0-BIND**: Resolves allele-specific binding/presentation with quantitative supervision integrating eluted ligands and IC50-annotated pairs. A minimal Hugging Face-compatible binding classifier achieving **AUROC of 96.2%** and **AUPRC of 95.2%** on combined BA/EL evaluation
+- **TransHLA2.0-IM**: Identifies immunogenic ligands from rigorously curated human T cell assays using cross-attention/CNN branches
+
+### Key Features
+
+- Trained on diverse IEDB ligands and IC50-annotated peptide–HLA pairs, capturing allele-discordant cases that sharpen specificity while maintaining well-calibrated operating points
+- Achieves competitive or superior discrimination with markedly fewer trainable parameters through **Low-Rank Adaptation (LoRA)**
+- Reduces end-to-end runtime via early peptide-level pruning
+- Interpretable attributions and sequence logos recover canonical anchors and align with peptide–HLA structural contacts
+- Provides training scripts to train your own models
+
+### Status
+
+- Published on Hugging Face: [TransHLA2.0-BIND](https://huggingface.co/SkywalkerLu/TransHLA2.0-BIND) (SkywalkerLu/TransHLA2.0-BIND)
 - Local repo scripts: models.py, utils.py, train_val.py, infer.py
 - Planned: PRE and IM checkpoints to be uploaded (examples below anticipate their usage)
 
@@ -60,7 +71,7 @@ A minimal Hugging Face-compatible PyTorch model for peptide–HLA binding classi
 3) forward pass to get logits and features
 4) apply softmax to obtain binding probability
 
-Python snippet:
+### Single Sample Example
 
 ```python
 import torch
@@ -99,7 +110,11 @@ with torch.no_grad():
     pred = int(prob_bind >= 0.5)
 
 print({"peptide": peptide, "bind_prob": round(prob_bind, 6), "label": pred})
+```
 
+### Batch Processing Example
+
+```python
 import torch
 import torch.nn.functional as F
 from transformers import AutoModel, AutoTokenizer
@@ -139,15 +154,13 @@ labels = (probs >= 0.5).long().tolist()
 
 for i, item in enumerate(batch):
     print({"peptide": item["peptide"], "bind_prob": float(probs[i].item()), "label": labels[i]})
-
-
 ```
-###Notes:
+
+### Notes
 
 The model returns (logits, features). Apply softmax only at inference time to obtain probabilities.
 Keep fixed PEP_LEN and HLA_LEN consistent with training.
 
-```markdown
 ## 4. TransHLA2.0-PRE (Data Prep Utilities)
 
 Purpose:
@@ -170,9 +183,7 @@ pep_ids, hla_ids = tokenize_pad(peptide="GILGFVFTL",
                                 hla_pseudo=pseudo,
                                 tokenizer_name="facebook/esm2_t33_650M_UR50D",
                                 pep_len=16, hla_len=36)
-
-
-```markdown
+```
 ## 5. TransHLA2.0-IM (Research Model)
 
 What it is:
@@ -200,8 +211,7 @@ tok = AutoTokenizer.from_pretrained("facebook/esm2_t33_650M_UR50D")
 
 # tokenize + pad as in Section 3
 # logits, feats = model(pep_tensor, hla_tensor); prob = softmax(logits, dim=1)[:,1]
-
-```markdown
+```
 ## 6. Local Project Structure
 
 project/
@@ -225,6 +235,7 @@ On first run, pretrained assets are auto-downloaded:
 ## 7. Training Your Own Model (Local)
 
 Run training + validation (default: TransHLA2_0_BIND):
+
 ```bash
 python train_val.py \
   --model_name TransHLA2_0_BIND \
@@ -233,8 +244,11 @@ python train_val.py \
   --lr 1e-5 \
   --save_dir checkpoints \
   --save_prefix TransHLA2_0_BIND_best.pt
-
 ```
+
+Train with IM model:
+
+```bash
 python train_val.py \
   --model_name TransHLA2_0_IM \
   --epochs 100 \
@@ -242,11 +256,13 @@ python train_val.py \
   --lr 1e-5 \
   --save_dir checkpoints \
   --save_prefix TransHLA2_0_IM_best.pt
+```
 
 Use standard shuffle (no weighted sampler):
 
-```
+```bash
 python train_val.py --model_name TransHLA2_0_BIND --balanced --epochs 100 --batch_size 32
+```
 
 
 Key arguments (train_val.py):
@@ -267,16 +283,16 @@ Memory: try NoCNN/NoCrossAttention, mixed precision (torch.cuda.amp), gradient a
 Class imbalance: weighted sampler is default; use --balanced to disable
 Freezing: start by training only the classifier, then unfreeze encoders later
 
-
-```markdown
 ## 8. Inference and Evaluation (Local)
 
 Run inference on the test set:
+
 ```bash
 python infer.py \
   --model_name TransHLA2_0_BIND \
   --checkpoint checkpoints/TransHLA2_0_BIND_best.pt \
   --output_dir output
+```
 
 Run inference with IM:
 
@@ -285,17 +301,13 @@ python infer.py \
   --model_name TransHLA2_0_IM \
   --checkpoint checkpoints/TransHLA2_0_IM_best.pt \
   --output_dir output
-
-
+```
 
 Outputs:
 
-Console: Acc, AUC, MCC, F1, Recall, Precision
-CSV: output/results_<test_filename>.csv with Pred_Prob_0, Pred_Prob_1, Pred_Label, True_Label plus original columns
-Plots in output/: roc_curve.png, pr_curve.png, confusion_matrix.png
-
-
-```markdown
+- Console: Acc, AUC, MCC, F1, Recall, Precision
+- CSV: output/results_<test_filename>.csv with Pred_Prob_0, Pred_Prob_1, Pred_Label, True_Label plus original columns
+- Plots in output/: roc_curve.png, pr_curve.png, confusion_matrix.png
 ## 9. Reproducibility
 
 - Fix random seeds via utils.set_seed
