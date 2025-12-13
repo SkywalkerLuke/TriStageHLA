@@ -71,8 +71,37 @@ Example data files:
 
 TransHLA2.0-PRE utilities will include standardized mapping from HLA allele names to pseudosequences and validators for sequence alphabet/length when published. Until then, follow the tokenization/padding utilities shown in the Quick Start sections.
 
+## 3. TransHLA2.0-PRE (Data Prep Utilities)
 
-## 3. Quick Start: TransHLA2.0-BIND (Hugging Face)
+TransHLA2.0-PRE enriches epitope-like peptides in peptide-only setting and provides standardized preprocessing for the pipeline. This stage enables early peptide-level pruning, reducing end-to-end runtime by filtering non-epitope candidates before expensive binding/immunogenicity predictions.
+
+### Status
+
+TransHLA2.0-PRE is planned for release. Until then, follow Section 2 (Data Conventions) and replicate the tokenization/padding utilities shown in the Quick Start sections.
+
+### Expected Usage (Preview)
+
+```python
+from transhla2_pre import load_hla_map, to_pseudo, tokenize_pad
+
+# Load HLA allele to pseudosequence mapping
+hla_map = load_hla_map("path/to/hla_map.tsv")  # allele -> pseudo
+
+# Convert HLA allele name to pseudosequence
+pseudo = to_pseudo("HLA-A*02:01", hla_map)
+
+# Tokenize and pad peptide and HLA pseudosequence
+pep_ids, hla_ids = tokenize_pad(
+    peptide="GILGFVFTL",
+    hla_pseudo=pseudo,
+    tokenizer_name="facebook/esm2_t33_650M_UR50D",
+    pep_len=16, 
+    hla_len=36
+)
+```
+
+
+## 4. Quick Start: TransHLA2.0-BIND (Hugging Face)
 
 TransHLA2.0-BIND is a minimal Hugging Face-compatible PyTorch model for peptide–HLA binding classification using ESM. It resolves allele-specific binding/presentation with quantitative supervision integrating eluted ligands and IC50-annotated pairs, achieving **AUROC of 96.2%** and **AUPRC of 95.2%** on combined BA/EL evaluation.
 
@@ -172,41 +201,7 @@ for i, item in enumerate(batch):
 The model returns (logits, features). Apply softmax only at inference time to obtain probabilities.
 Keep fixed PEP_LEN and HLA_LEN consistent with training.
 
-## 4. TransHLA2.0-PRE (Data Prep Utilities)
 
-TransHLA2.0-PRE enriches epitope-like peptides in peptide-only setting and provides standardized preprocessing for the pipeline. This stage enables early peptide-level pruning, reducing end-to-end runtime by filtering non-epitope candidates before expensive binding/immunogenicity predictions.
-
-### Features
-
-- **HLA allele mapping**: Convert HLA allele names (e.g., `HLA-A*02:01`) to pseudosequences
-- **Input validation**: Check amino acid alphabet and length constraints
-- **Standardized tokenization**: Consistent ESM tokenizer integration with fixed-length padding
-- **Data export**: Generate ready-to-train TSV files compatible with BIND and IM models
-
-### Status
-
-TransHLA2.0-PRE is planned for release. Until then, follow Section 2 (Data Conventions) and replicate the tokenization/padding utilities shown in the Quick Start sections.
-
-### Expected Usage (Preview)
-
-```python
-from transhla2_pre import load_hla_map, to_pseudo, tokenize_pad
-
-# Load HLA allele to pseudosequence mapping
-hla_map = load_hla_map("path/to/hla_map.tsv")  # allele -> pseudo
-
-# Convert HLA allele name to pseudosequence
-pseudo = to_pseudo("HLA-A*02:01", hla_map)
-
-# Tokenize and pad peptide and HLA pseudosequence
-pep_ids, hla_ids = tokenize_pad(
-    peptide="GILGFVFTL",
-    hla_pseudo=pseudo,
-    tokenizer_name="facebook/esm2_t33_650M_UR50D",
-    pep_len=16, 
-    hla_len=36
-)
-```
 ## 5. Quick Start: TransHLA2.0-IM (Research Model)
 
 TransHLA2.0-IM identifies immunogenic ligands from rigorously curated human T cell assays. The model architecture leverages:
