@@ -72,7 +72,7 @@ Example data files:
 
 TransHLA2.0-PRE utilities will include standardized mapping from HLA allele names to pseudosequences and validators for sequence alphabet/length when published. Until then, follow the tokenization/padding utilities shown in the Quick Start sections.
 
-## 3. TransHLA2.0-PRE (Data Prep Utilities)
+## 3. Quick Start: TransHLA2.0-PRE
 
 TransHLA2.0-PRE enriches epitope-like peptides in peptide-only setting and provides standardized preprocessing for the pipeline. This stage enables early peptide-level pruning, reducing end-to-end runtime by filtering non-epitope candidates before expensive binding/immunogenicity predictions.
 
