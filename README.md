@@ -18,7 +18,8 @@ We introduce **TransHLA2.0**, a compact three-stage framework that addresses the
 
 ### Status
 
-- Published on Hugging Face: 
+- Published on Hugging Face:
+  - [TransHLA2.0-PRE](https://huggingface.co/SkywalkerLu/TransHLA2.0-PRE)(Skywalkerlu/TransHLA2.0-PRE)
   - [TransHLA2.0-BIND](https://huggingface.co/SkywalkerLu/TransHLA2.0-BIND) (SkywalkerLu/TransHLA2.0-BIND)
   - [TransHLA2.0-IM](https://huggingface.co/SkywalkerLu/TransHLA2.0-IM) (SkywalkerLu/TransHLA2.0-IM)
 - Local repo scripts: models.py, utils.py, train_val.py, infer.py
