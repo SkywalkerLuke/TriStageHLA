@@ -335,9 +335,9 @@ project/
 ├─ infer.py # Inference/testing (metrics, plots, CSV)
 ├─ requirements.txt # Dependencies
 ├─ data/
-│ ├─ TransHLA_train_version_8_clean.txt
-│ ├─ TransHLA_val_version_8_clean.txt
-│ └─ TransHLA_test_version_8_clean.txt
+│ ├─ Example_train.txt
+│ ├─ Example_val.txt
+│ └─ Example_test.txt
 ├─ checkpoints/ # Saved model weights
 └─ output/ # Plots and CSV outputs
 
