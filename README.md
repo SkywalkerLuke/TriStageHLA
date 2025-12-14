@@ -23,8 +23,7 @@ We introduce **TransHLA2.0**, a compact three-stage framework that addresses the
   - [TransHLA2.0-BIND](https://huggingface.co/SkywalkerLu/TransHLA2.0-BIND) (SkywalkerLu/TransHLA2.0-BIND)
   - [TransHLA2.0-IM](https://huggingface.co/SkywalkerLu/TransHLA2.0-IM) (SkywalkerLu/TransHLA2.0-IM)
 - Local repo scripts: models.py, utils.py, train_val.py, infer.py
-- Code and pretrained weights: [GitHub Repository](https://github.com/SkywalkerLuke/TransHLA2.0)
-- Planned: PRE checkpoint to be uploaded (examples below anticipate its usage)
+- Data: all data published in [Google Drive](https://drive.google.com/drive/folders/1gYV1WJGtCXSvKGnfUIkra_P6BwXwS4i4?usp=sharing)
 
 ## 1. Environment and Installation
 
