@@ -67,19 +67,13 @@ Required columns: `peptide`, `pseudosequence` (or `hla_pseudo`), `label`
 Example data files:
   - `data/Example_train.txt`
 
-### Note on PRE Utilities
-
-TransHLA2.0-PRE utilities will include standardized mapping from HLA allele names to pseudosequences and validators for sequence alphabet/length when published. Until then, follow the tokenization/padding utilities shown in the Quick Start sections.
-
 ## 3. Quick Start: TransHLA2.0-PRE
 
 TransHLA2.0-PRE enriches epitope-like peptides in peptide-only setting and provides standardized preprocessing for the pipeline. This stage enables early peptide-level pruning, reducing end-to-end runtime by filtering non-epitope candidates before expensive binding/immunogenicity predictions.
 
-### Status
 
-TransHLA2.0-PRE is planned for release. Until then, follow Section 2 (Data Conventions) and replicate the tokenization/padding utilities shown in the Quick Start sections.
 
-### Single Sample Example
+### Usage Example
 
 ```python
 import torch
@@ -110,66 +104,7 @@ with torch.no_grad():
 
 print({"peptide": peptide, "pre_prob": round(prob_bind, 6), "label": pred})
 ```
-### Batch Processing Example
-```python
-import torch
-import torch.nn.functional as F
-from transformers import AutoModel, AutoTokenizer
 
-# Device
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
-# 加载 PRE 模型（注意：确保该模型确实支持 logits 输出）
-model_id = "SkywalkerLu/TransHLA2.0-PRE"
-model = AutoModel.from_pretrained(model_id, trust_remote_code=True).to(device).eval()
-
-# 加载与训练一致的 ESM2 tokenizer
-tok = AutoTokenizer.from_pretrained("facebook/esm2_t33_650M_UR50D")
-
-# 固定长度（需与训练一致）
-PEP_LEN = 16
-PAD_ID = tok.pad_token_id if tok.pad_token_id is not None else 1
-
-def pad_to_len(ids_list, target_len, pad_id):
-    if len(ids_list) < target_len:
-        return ids_list + [pad_id] * (target_len - len(ids_list))
-    return ids_list[:target_len]
-
-# 示例批次（替换为你的真实肽序列列表）
-batch = [
-    {"peptide": "GILGFVFTL"},
-    {"peptide": "NLVPMVATV"},
-    {"peptide": "SIINFEKL"},
-    {"peptide": "GLCTLVAML"},
-]
-
-# 批量分词与填充
-pep_ids_batch = []
-for  in batch:
-    pep = ["peptide"]
-    ids = tok(pep, add_special_tokens=True)["input_ids"]
-    ids = pad_to_len(ids, PEP_LEN, PAD_ID)
-    pep_ids_batch.append(ids)
-
-# 转为张量 [B, PEP_LEN]
-pep_tensor = torch.tensor(pep_ids_batch, dtype=torch.long, device=device)
-
-# 前向计算
-with torch.no_grad():
-    logits, features = model(pep_tensor)   # 期望 logits 形状: [B, 2]
-    probs = F.softmax(logits, dim=1)[:, 1] # 取类别1（bind）的概率
-
-# 二分类标签（0/1）
-labels = (probs >= 0.5).long().tolist()
-
-# 打印结果
-for i,  in enumerate(batch):
-    print({
-        "peptide": ["peptide"],
-        "pre_prob": float(probs[i].()),
-        "label": labels[i]
-    })
-```
 ## 4. Quick Start: TransHLA2.0-BIND
 TransHLA2.0-BIND is a minimal Hugging Face-compatible PyTorch model for peptide–HLA binding classification using ESM. It resolves allele-specific binding/presentation with quantitative supervision integrating eluted ligands and IC50-annotated pairs, achieving **AUROC of 96.2%** and **AUPRC of 95.2%** on combined BA/EL evaluation.
 
@@ -179,7 +114,7 @@ Inference workflow:
 3) forward pass to get logits and features
 4) apply softmax to obtain binding probability
 
-### Single Sample Example
+### Usage Example
 
 ```python
 import torch
@@ -220,54 +155,6 @@ with torch.no_grad():
 print({"peptide": peptide, "bind_prob": round(prob_bind, 6), "label": pred})
 ```
 
-### Batch Processing Example
-
-```python
-import torch
-import torch.nn.functional as F
-from transformers import AutoModel, AutoTokenizer
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-model_id = "SkywalkerLu/TransHLA2.0-BIND"
-model = AutoModel.from_pretrained(model_id, trust_remote_code=True).to(device).eval()
-tok = AutoTokenizer.from_pretrained("facebook/esm2_t33_650M_UR50D")
-
-PEP_LEN = 16
-HLA_LEN = 36
-PAD_ID = tok.pad_token_id if tok.pad_token_id is not None else 1
-
-def pad_to_len(ids_list, target_len, pad_id):
-    return (ids_list + [pad_id] * (target_len - len(ids_list))) if len(ids_list) < target_len else ids_list[:target_len]
-
-batch = [
-    {"peptide": "GILGFVFTL", "hla_pseudo": "YYSEYRNIYAQTDESNLYLSYDYYTWAERAYEWY", "label": 1},
-    {"peptide": "SIINFEKL", "hla_pseudo": "YYSEYRNIYAQTDESNLYLSYDYYTWAERAYEWY", "label": 0},
-]
-
-pep_ids_batch, hla_ids_batch = [], []
-for item in batch:
-    pep_ids = tok(item["peptide"], add_special_tokens=True)["input_ids"]
-    hla_ids = tok(item["hla_pseudo"], add_special_tokens=True)["input_ids"]
-    pep_ids_batch.append(pad_to_len(pep_ids, PEP_LEN, PAD_ID))
-    hla_ids_batch.append(pad_to_len(hla_ids, HLA_LEN, PAD_ID))
-
-pep_tensor = torch.tensor(pep_ids_batch, dtype=torch.long, device=device)  # [B, PEP_LEN]
-hla_tensor = torch.tensor(hla_ids_batch, dtype=torch.long, device=device)  # [B, HLA_LEN]
-
-with torch.no_grad():
-    logits, _ = model(pep_tensor, hla_tensor)   # [B, 2]
-    probs = logits[:,1].item()
-
-labels = (probs >= 0.5).long().tolist()
-
-for i, item in enumerate(batch):
-    print({"peptide": item["peptide"], "bind_prob": float(probs[i].item()), "label": labels[i]})
-```
-
-### Notes
-
-The model returns (logits, features). Apply softmax only at inference time to obtain probabilities.
-Keep fixed PEP_LEN and HLA_LEN consistent with training.
 
 
 ## 5. Quick Start: TransHLA2.0-IM
@@ -283,7 +170,7 @@ TransHLA2.0-IM identifies immunogenic ligands from rigorously curated human T ce
 The model achieves competitive performance with markedly fewer trainable parameters through LoRA, reducing memory footprint while maintaining discrimination power. Training/inference scripts are included locally (models.py, train_val.py, infer.py).
 
 
-### Single Sample Example
+### Usage Example
 
 ```python
 from transformers import AutoModel, AutoTokenizer
@@ -320,49 +207,6 @@ with torch.no_grad():
 
 print({"peptide": peptide, "immunogenic_prob": round(prob_immunogenic, 6)})
 ```
-### Batch Processing Example
-```python
-import torch
-import torch.nn.functional as F
-from transformers import AutoModel, AutoTokenizer
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-model_id = "SkywalkerLu/TransHLA2.0-IM"
-model = AutoModel.from_pretrained(model_id, trust_remote_code=True).to(device).eval()
-tok = AutoTokenizer.from_pretrained("facebook/esm2_t33_650M_UR50D")
-
-PEP_LEN = 16
-HLA_LEN = 36
-PAD_ID = tok.pad_token_id if tok.pad_token_id is not None else 1
-
-def pad_to_len(ids_list, target_len, pad_id):
-    return (ids_list + [pad_id] * (target_len - len(ids_list))) if len(ids_list) < target_len else ids_list[:target_len]
-
-batch = [
-    {"peptide": "GILGFVFTL", "hla_pseudo": "YYSEYRNIYAQTDESNLYLSYDYYTWAERAYEWY", "label": 1},
-    {"peptide": "SIINFEKL", "hla_pseudo": "YYSEYRNIYAQTDESNLYLSYDYYTWAERAYEWY", "label": 0},
-]
-
-pep_ids_batch, hla_ids_batch = [], []
-for item in batch:
-    pep_ids = tok(item["peptide"], add_special_tokens=True)["input_ids"]
-    hla_ids = tok(item["hla_pseudo"], add_special_tokens=True)["input_ids"]
-    pep_ids_batch.append(pad_to_len(pep_ids, PEP_LEN, PAD_ID))
-    hla_ids_batch.append(pad_to_len(hla_ids, HLA_LEN, PAD_ID))
-
-pep_tensor = torch.tensor(pep_ids_batch, dtype=torch.long, device=device)  # [B, PEP_LEN]
-hla_tensor = torch.tensor(hla_ids_batch, dtype=torch.long, device=device)  # [B, HLA_LEN]
-
-with torch.no_grad():
-    logits, _ = model(pep_tensor, hla_tensor)   # [B, 2]
-    probs = logits[:,1].item()
-
-labels = (probs >= 0.5).long().tolist()
-
-for i, item in enumerate(batch):
-    print({"peptide": item["peptide"], "bind_prob": float(probs[i].item()), "label": labels[i]})
-```
-
 
 ## 6. Local Project Structure
 
