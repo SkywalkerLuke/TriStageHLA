@@ -25,49 +25,9 @@ We introduce **TransHLA2.0**, a compact three-stage framework that addresses the
 - Local repo scripts: models.py, utils.py, train_val.py, infer.py
 - Data: all data published in [Google Drive](https://drive.google.com/drive/folders/1gYV1WJGtCXSvKGnfUIkra_P6BwXwS4i4?usp=sharing)
 
-## 1. Environment and Installation
 
-Requirements:
-- Python ≥ 3.8 (≥ 3.9 recommended for training scripts)
-- torch ≥ 2.0
-- transformers ≥ 4.40
-- peft (only if you use LoRA/PEFT adapters)
-- Optional (training scripts): pandas, numpy, scikit-learn, tqdm, matplotlib, seaborn
 
-Install core libs:
-- pip install torch transformers peft
-
-Install full training stack (from repo root):
-- pip install -r requirements.txt
-
-Tip: install torch matching your CUDA first, e.g. CUDA 12.1:
-- pip install torch --index-url https://download.pytorch.org/whl/cu121
-
-## 2. Data Conventions (PRE)
-
-TransHLA2.0 uses standardized inputs for consistent processing across all stages:
-
-### Input Format
-
-- **peptide**: amino-acid string (uppercased), typically 8–14 residues
-- **pseudosequence**: HLA pseudo-sequence (length typically 34)
-- **label**: binary (0/1) for binding/immunogenicity classification
-
-### Tokenization and Lengths
-
-- **Tokenizer**: `facebook/esm2_t33_650M_UR50D` (ESM-2 tokenizer)
-- **Fixed lengths** (defaults): peptide = 16, HLA = 36
-- Add special tokens from ESM tokenizer (CLS, SEP), then pad/truncate to fixed lengths
-- **Pad token id**: `tokenizer.pad_token_id` (fallback to 1 if None)
-
-### File Format (TSV)
-
-Required columns: `peptide`, `pseudosequence` (or `hla_pseudo`), `label`
-
-Example data files:
-  - `data/Example_train.txt`
-
-## 3. Quick Start: TransHLA2.0-PRE
+## 1. Quick Start: TransHLA2.0-PRE
 
 TransHLA2.0-PRE enriches epitope-like peptides in peptide-only setting and provides standardized preprocessing for the pipeline. This stage enables early peptide-level pruning, reducing end-to-end runtime by filtering non-epitope candidates before expensive binding/immunogenicity predictions.
 
@@ -105,7 +65,7 @@ with torch.no_grad():
 print({"peptide": peptide, "pre_prob": round(prob_bind, 6), "label": pred})
 ```
 
-## 4. Quick Start: TransHLA2.0-BIND
+## 2. Quick Start: TransHLA2.0-BIND
 TransHLA2.0-BIND is a minimal Hugging Face-compatible PyTorch model for peptide–HLA binding classification using ESM. It resolves allele-specific binding/presentation with quantitative supervision integrating eluted ligands and IC50-annotated pairs, achieving **AUROC of 96.2%** and **AUPRC of 95.2%** on combined BA/EL evaluation.
 
 Inference workflow:
@@ -157,7 +117,7 @@ print({"peptide": peptide, "bind_prob": round(prob_bind, 6), "label": pred})
 
 
 
-## 5. Quick Start: TransHLA2.0-IM
+## 3. Quick Start: TransHLA2.0-IM
 
 TransHLA2.0-IM identifies immunogenic ligands from rigorously curated human T cell assays. The model architecture leverages:
 
@@ -207,6 +167,49 @@ with torch.no_grad():
 
 print({"peptide": peptide, "immunogenic_prob": round(prob_immunogenic, 6)})
 ```
+
+## 4. Environment and Installation
+
+Requirements:
+- Python ≥ 3.8 (≥ 3.9 recommended for training scripts)
+- torch ≥ 2.0
+- transformers ≥ 4.40
+- peft (only if you use LoRA/PEFT adapters)
+- Optional (training scripts): pandas, numpy, scikit-learn, tqdm, matplotlib, seaborn
+
+Install core libs:
+- pip install torch transformers peft
+
+Install full training stack (from repo root):
+- pip install -r requirements.txt
+
+Tip: install torch matching your CUDA first, e.g. CUDA 12.1:
+- pip install torch --index-url https://download.pytorch.org/whl/cu121
+
+## 5. Data Conventions (PRE)
+
+TransHLA2.0 uses standardized inputs for consistent processing across all stages:
+
+### Input Format
+
+- **peptide**: amino-acid string (uppercased), typically 8–14 residues
+- **pseudosequence**: HLA pseudo-sequence (length typically 34)
+- **label**: binary (0/1) for binding/immunogenicity classification
+
+### Tokenization and Lengths
+
+- **Tokenizer**: `facebook/esm2_t33_650M_UR50D` (ESM-2 tokenizer)
+- **Fixed lengths** (defaults): peptide = 16, HLA = 36
+- Add special tokens from ESM tokenizer (CLS, SEP), then pad/truncate to fixed lengths
+- **Pad token id**: `tokenizer.pad_token_id` (fallback to 1 if None)
+
+### File Format (TSV)
+
+Required columns: `peptide`, `pseudosequence` (or `hla_pseudo`), `label`
+
+Example data files:
+  - `data/Example_train.txt`
+
 
 ## 6. Local Project Structure
 
