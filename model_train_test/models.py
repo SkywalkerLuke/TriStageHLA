@@ -56,7 +56,7 @@ def _make_cnn_blocks(d_model=480, cnn_num_channel=256, region_embedding_size=3,
     return region_cnn1, region_cnn2, padding1, padding2, relu, cnn1, cnn2, maxpooling
 
 
-class TransHLA2_0_BIND(nn.Module):
+class TriStageHLA_BIND(nn.Module):
     def __init__(self, lora_esm: Lora_ESM, d_model=480, n_layers=4, n_head=8, d_ff=64,
                  cnn_num_channel=256):
         super().__init__()
@@ -162,7 +162,7 @@ from transformers import EsmModel
 from peft import get_peft_model, LoraConfig, TaskType
 
 
-class TransHLA2_0_IM(nn.Module):
+class TriStageHLA_IM(nn.Module):
     def __init__(self,
                  esm_model_name: str = "facebook/esm2_t12_35M_UR50D",
                  d_model: int = 480,
@@ -534,4 +534,5 @@ def reinit_classifier(model: nn.Module):
         if isinstance(layer, nn.Linear):
             nn.init.xavier_uniform_(layer.weight)
             if layer.bias is not None:
+
                 nn.init.zeros_(layer.bias)
