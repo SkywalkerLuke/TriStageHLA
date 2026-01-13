@@ -213,7 +213,7 @@ Example data files:
 ## 6. Local Project Structure
 
 project/
-├─ models.py # Model definitions (TransHLA2_0_IM + ablations)
+├─ models.py # Model definitions (TriStageHLA_IM + ablations)
 ├─ utils.py # Data loading, tokenization, samplers, loss, metrics
 ├─ train_val.py # Training + validation (early stopping, best checkpoint)
 ├─ infer.py # Inference/testing (metrics, plots, CSV)
@@ -240,12 +240,12 @@ Run training + validation with the BIND model:
 
 ```bash
 python train_val.py \
-  --model_name TransHLA2_0_BIND \
+  --model_name TriStageHLA_BIND \
   --epochs 100 \
   --batch_size 32 \
   --lr 1e-5 \
   --save_dir checkpoints \
-  --save_prefix TransHLA2_0_BIND_best.pt
+  --save_prefix TriStageHLA_BIND_best.pt
 ```
 
 ### Training TriStageHLA-IM
@@ -254,18 +254,18 @@ Train with the IM model (supports LoRA for efficient training):
 
 ```bash
 python train_val.py \
-  --model_name TransHLA2_0_IM \
+  --model_name TriStageHLA_IM \
   --epochs 100 \
   --batch_size 32 \
   --lr 1e-5 \
   --save_dir checkpoints \
-  --save_prefix TransHLA2_0_IM_best.pt
+  --save_prefix TriStageHLA_IM_best.pt
 ```
 
 Use standard shuffle (no weighted sampler):
 
 ```bash
-python train_val.py --model_name TransHLA2_0_BIND --balanced --epochs 100 --batch_size 32
+python train_val.py --model_name TriStageHLA_BIND --balanced --epochs 100 --batch_size 32
 ```
 
 
@@ -277,7 +277,7 @@ Key arguments for `train_val.py`:
 - `--train_path`, `--val_path`, `--test_path`: TSV file paths
 
 **Model selection:**
-- `--model_name`: Choose from `{TransHLA2_0_IM, TransHLA2_0_BIND, NoCNN, NoTransformer, NoCrossAttention}`
+- `--model_name`: Choose from `{TriStageHLA_IM, TriStageHLA_BIND, NoCNN, NoTransformer, NoCrossAttention}`
 
 **Training hyperparameters:**
 - `--epochs`: Number of training epochs
@@ -321,8 +321,8 @@ Run inference on the test set:
 
 ```bash
 python infer.py \
-  --model_name TransHLA2_0_BIND \
-  --checkpoint checkpoints/TransHLA2_0_BIND_best.pt \
+  --model_name TriStageHLA_BIND \
+  --checkpoint checkpoints/TriStageHLA_best.pt \
   --output_dir output
 ```
 
@@ -332,8 +332,8 @@ Run inference with the IM model:
 
 ```bash
 python infer.py \
-  --model_name TransHLA2_0_IM \
-  --checkpoint checkpoints/TransHLA2_0_IM_best.pt \
+  --model_name TriStageHLA_IM \
+  --checkpoint checkpoints/TriStageHLA_IM_best.pt \
   --output_dir output
 ```
 
@@ -367,7 +367,7 @@ To ensure reproducible results across different runs:
 - Document all CLI arguments used for training and inference
 
 **Checkpoint management**: 
-- Place trained checkpoints (e.g., `TransHLA2_0_BIND_best.pt`, `TransHLA2_0_IM_best.pt`) under `checkpoints/` directory
+- Place trained checkpoints (e.g., `TriStageHLA_BIND_best.pt`, `TriStageHLA_IM_best.pt`) under `checkpoints/` directory
 - Reference checkpoints via `--checkpoint` argument during inference
 - Include checkpoint metadata (training date, hyperparameters, dataset version) in checkpoint filenames or separate log files
 
