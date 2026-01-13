@@ -6,17 +6,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-from models import Lora_ESM, TransHLA2_0_BIND, TransHLA2_0_IM, NoCNNModel, NoTransformerModel, NoCrossAttentionModel
+from models import Lora_ESM, TriStageHLA_BIND, TriStageHLA_IM, NoCNNModel, NoTransformerModel, NoCrossAttentionModel
 from utils import set_seed, load_and_tokenize, test_loader_eval
 from sklearn.metrics import roc_curve, auc, precision_recall_curve, average_precision_score, confusion_matrix
 
 def build_model(model_name: str, device: str):
-    if model_name == "TransHLA2_0_IM":
-        model = TransHLA2_0_IM()
+    if model_name == "TriStageHLA_IM":
+        model = TriStageHLA_IM()
     else:
         backbone = Lora_ESM()
-        if model_name == "TransHLA2_0_BIND":
-            model = TransHLA2_0_BIND(backbone)
+        if model_name == "TriStageHLA_BIND":
+            model = TriStageHLA_BIND(backbone)
         elif model_name == "NoCNN":
             model = NoCNNModel(backbone)
         elif model_name == "NoTransformer":
@@ -29,10 +29,10 @@ def build_model(model_name: str, device: str):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--train_path", type=str, default="data/TransHLA_train_version_8_clean.txt")
-    parser.add_argument("--val_path", type=str, default="data/TransHLA_val_version_8_clean.txt")
-    parser.add_argument("--test_path", type=str, default="data/TransHLA_test_version_8_clean.txt")
-    parser.add_argument("--model_name", type=str, default="NoCNN", choices=["TransHLA2_0_BIND", "TransHLA2_0_IM", "NoCNN", "NoTransformer", "NoCrossAttention"])
+    parser.add_argument("--train_path", type=str, default="data/Example_train.txt")
+    parser.add_argument("--val_path", type=str, default="data/Example_val.txt")
+    parser.add_argument("--test_path", type=str, default="data/Example_test.txt")
+    parser.add_argument("--model_name", type=str, default="NoCNN", choices=["TriStageHLA_BIND", "TriStageHLA_IM", "NoCNN", "NoTransformer", "NoCrossAttention"])
     parser.add_argument("--checkpoint", type=str, default="checkpoints/best_model.pt")
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
@@ -116,4 +116,5 @@ def main():
     print(f"Saved: {out_csv}\nROC: {roc_path}\nPR: {pr_path}\nCM: {cm_path}")
 
 if __name__ == "__main__":
+
     main()
