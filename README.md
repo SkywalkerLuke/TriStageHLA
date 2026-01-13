@@ -1,12 +1,12 @@
-## TransHLA2.0 — Tutorial and README
+## TriStageHLA — Tutorial and README
 
 High-throughput screening on HLA class I epitopes underpins neoantigen vaccines development, T cell therapies, and frontline responses to emerging pathogens. However, practical pipelines still struggle to prioritize true ligands and immunogenic targets at proteome scale. 
 
-We introduce **TransHLA2.0**, a compact three-stage framework that addresses these challenges:
+We introduce **TriStageHLA**, a compact three-stage framework that addresses these challenges:
 
-- **TransHLA2.0-PRE**: Enriches epitope-like peptides in peptide-only setting with standardization and preprocessing utilities
-- **TransHLA2.0-BIND**: Resolves allele-specific binding/presentation with quantitative supervision integrating eluted ligands and IC50-annotated pairs. A minimal Hugging Face-compatible binding classifier achieving **AUROC of 96.2%** and **AUPRC of 95.2%** on combined BA/EL evaluation
-- **TransHLA2.0-IM**: Identifies immunogenic ligands from rigorously curated human T cell assays using cross-attention/CNN branches
+- **TriStageHLA-PRE**: Enriches epitope-like peptides in peptide-only setting with standardization and preprocessing utilities
+- **TriStageHLA-BIND**: Resolves allele-specific binding/presentation with quantitative supervision integrating eluted ligands and IC50-annotated pairs. A minimal Hugging Face-compatible binding classifier achieving **AUROC of 96.2%** and **AUPRC of 95.2%** on combined BA/EL evaluation
+- **TriStageHLA-IM**: Identifies immunogenic ligands from rigorously curated human T cell assays using cross-attention/CNN branches
 
 ### Key Features
 
@@ -19,9 +19,9 @@ We introduce **TransHLA2.0**, a compact three-stage framework that addresses the
 ### Status
 
 - Published on Hugging Face:
-  - [TransHLA2.0-PRE](https://huggingface.co/SkywalkerLu/TransHLA2.0-PRE)(Skywalkerlu/TransHLA2.0-PRE)
-  - [TransHLA2.0-BIND](https://huggingface.co/SkywalkerLu/TransHLA2.0-BIND) (SkywalkerLu/TransHLA2.0-BIND)
-  - [TransHLA2.0-IM](https://huggingface.co/SkywalkerLu/TransHLA2.0-IM) (SkywalkerLu/TransHLA2.0-IM)
+  - [TriStageHLA-PRE](https://huggingface.co/SkywalkerLu/TriStageHLA-PRE)(Skywalkerlu/TriStageHLA-PRE)
+  - [TriStageHLA-BIND](https://huggingface.co/SkywalkerLu/TriStageHLA-BIND) (SkywalkerLu/TriStageHLA-BIND)
+  - [TriStageHLA-IM](https://huggingface.co/SkywalkerLu/TriStageHLA-IM) (SkywalkerLu/TriStageHLA-IM)
 - Local repo scripts: models.py, utils.py, train_val.py, infer.py
 - Data: all data published in [Google Drive](https://drive.google.com/drive/folders/1gYV1WJGtCXSvKGnfUIkra_P6BwXwS4i4?usp=sharing)
 
@@ -43,9 +43,9 @@ Tip: install torch matching your CUDA first, e.g. CUDA 12.1:
 - pip install torch --index-url https://download.pytorch.org/whl/cu121
 
 
-## 2. Quick Start: TransHLA2.0-PRE
+## 2. Quick Start: TriStageHLA-PRE
 
-TransHLA2.0-PRE enriches epitope-like peptides in peptide-only setting and provides standardized preprocessing for the pipeline. This stage enables early peptide-level pruning, reducing end-to-end runtime by filtering non-epitope candidates before expensive binding/immunogenicity predictions.
+TriStageHLA-PRE enriches epitope-like peptides in peptide-only setting and provides standardized preprocessing for the pipeline. This stage enables early peptide-level pruning, reducing end-to-end runtime by filtering non-epitope candidates before expensive binding/immunogenicity predictions.
 
 
 
@@ -59,7 +59,7 @@ from transformers import AutoModel, AutoTokenizer
 # Device
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-model_id = "SkywalkerLu/TransHLA2.0-PRE"
+model_id = "SkywalkerLu/TriStageHLA-PRE"
 model = AutoModel.from_pretrained(model_id, trust_remote_code=True).to(device).eval()
 
 # Load tokenizer used in training (ESM2 650M)
@@ -81,8 +81,8 @@ with torch.no_grad():
 print({"peptide": peptide, "pre_prob": round(prob_bind, 6), "label": pred})
 ```
 
-## 3. Quick Start: TransHLA2.0-BIND
-TransHLA2.0-BIND is a minimal Hugging Face-compatible PyTorch model for peptide–HLA binding classification using ESM. It resolves allele-specific binding/presentation with quantitative supervision integrating eluted ligands and IC50-annotated pairs, achieving **AUROC of 96.2%** and **AUPRC of 95.2%** on combined BA/EL evaluation.
+## 3. Quick Start: TriStageHLA-BIND
+TriStageHLA-BIND is a minimal Hugging Face-compatible PyTorch model for peptide–HLA binding classification using ESM. It resolves allele-specific binding/presentation with quantitative supervision integrating eluted ligands and IC50-annotated pairs, achieving **AUROC of 96.2%** and **AUPRC of 95.2%** on combined BA/EL evaluation.
 
 Inference workflow:
 1) tokenize peptide and HLA pseudosequence with ESM tokenizer
@@ -99,7 +99,7 @@ from transformers import AutoModel, AutoTokenizer
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-model_id = "SkywalkerLu/TransHLA2.0-BIND"
+model_id = "SkywalkerLu/TriStageHLA-BIND"
 model = AutoModel.from_pretrained(model_id, trust_remote_code=True).to(device).eval()
 
 tok = AutoTokenizer.from_pretrained("facebook/esm2_t33_650M_UR50D")
@@ -133,9 +133,9 @@ print({"peptide": peptide, "bind_prob": round(prob_bind, 6), "label": pred})
 
 
 
-## 4. Quick Start: TransHLA2.0-IM
+## 4. Quick Start: TriStageHLA-IM
 
-TransHLA2.0-IM identifies immunogenic ligands from rigorously curated human T cell assays. The model architecture leverages:
+TriStageHLA-IM identifies immunogenic ligands from rigorously curated human T cell assays. The model architecture leverages:
 
 - **Dual LoRA-ESM encoders** (peptide and HLA) for efficient parameter adaptation using Low-Rank Adaptation (LoRA)
 - **Per-stream Transformer encoders** for sequence representation
@@ -154,11 +154,11 @@ import torch
 import torch.nn.functional as F
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model_id = "SkywalkerLu/TransHLA2.0-IM"
+model_id = "SkywalkerLu/TriStageHLA-IM"
 model = AutoModel.from_pretrained(model_id, trust_remote_code=True).to(device).eval()
 tok = AutoTokenizer.from_pretrained("facebook/esm2_t33_650M_UR50D")
 
-# Tokenize and pad as in Section 3 (TransHLA2.0-BIND)
+# Tokenize and pad as in Section 3 (TriStageHLA-BIND)
 peptide = "GILGFVFTL"
 hla_pseudoseq = "YYSEYRNIYAQTDESNLYLSYDYYTWAERAYEWY"
 
@@ -187,7 +187,7 @@ print({"peptide": peptide, "immunogenic_prob": round(prob_immunogenic, 6)})
 
 ## 5. Data Conventions (PRE)(For Trainging)
 
-TransHLA2.0 uses standardized inputs for consistent processing across all stages:
+TriStageHLA uses standardized inputs for consistent processing across all stages:
 
 ### Input Format
 
@@ -232,9 +232,9 @@ On first run, pretrained assets are auto-downloaded:
 
 ## 7. Training Your Own Model (Local)
 
-TransHLA2.0 models are trained on diverse IEDB ligands and IC50-annotated peptide–HLA pairs, capturing allele-discordant cases that sharpen specificity while maintaining well-calibrated operating points. You can train custom models using the provided scripts.
+TriStageHLA models are trained on diverse IEDB ligands and IC50-annotated peptide–HLA pairs, capturing allele-discordant cases that sharpen specificity while maintaining well-calibrated operating points. You can train custom models using the provided scripts.
 
-### Training TransHLA2.0-BIND
+### Training TriStageHLA-BIND
 
 Run training + validation with the BIND model:
 
@@ -248,7 +248,7 @@ python train_val.py \
   --save_prefix TransHLA2_0_BIND_best.pt
 ```
 
-### Training TransHLA2.0-IM
+### Training TriStageHLA-IM
 
 Train with the IM model (supports LoRA for efficient training):
 
@@ -309,13 +309,13 @@ Key arguments for `train_val.py`:
 
 **Transfer learning**: Start by training only the classifier head, then unfreeze encoders later for fine-tuning
 
-**LoRA efficiency**: TransHLA2.0-IM uses Low-Rank Adaptation (LoRA) to reduce trainable parameters while maintaining performance
+**LoRA efficiency**: TriStageHLA-IM uses Low-Rank Adaptation (LoRA) to reduce trainable parameters while maintaining performance
 
 ## 8. Inference and Evaluation (Local)
 
 Evaluate trained models on test sets to obtain performance metrics including accuracy, AUC, MCC, F1, recall, and precision. The inference script generates comprehensive outputs including CSV files with predictions and visualization plots.
 
-### Inference with TransHLA2.0-BIND
+### Inference with TriStageHLA-BIND
 
 Run inference on the test set:
 
@@ -326,7 +326,7 @@ python infer.py \
   --output_dir output
 ```
 
-### Inference with TransHLA2.0-IM
+### Inference with TriStageHLA-IM
 
 Run inference with the IM model:
 
