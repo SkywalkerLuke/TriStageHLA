@@ -4,19 +4,19 @@ import torch
 import torch.nn as nn
 from tqdm import tqdm
 
-from models import Lora_ESM, TransHLA2_0_BIND, TransHLA2_0_IM, NoCNNModel, NoTransformerModel, NoCrossAttentionModel, reinit_classifier
+from models import Lora_ESM, TriStageHLA_BIND, TriStageHLA2_0_IM, NoCNNModel, NoTransformerModel, NoCrossAttentionModel, reinit_classifier
 from utils import (
     set_seed, load_and_tokenize, unbalanced_addbatch, addbatch,
     get_val_loss, test_loader_eval
 )
 
 def build_model(model_name: str, device: str):
-    if model_name == "TransHLA2_0_IM":
-        model = TransHLA2_0_IM()
+    if model_name == "TriStageHLA_IM":
+        model = TriStageHLA_IM()
     else:
         backbone = Lora_ESM()
-        if model_name == "TransHLA2_0_BIND":
-            model = TransHLA2_0_BIND(backbone)
+        if model_name == "TriStageHLA_BIND":
+            model = TriStageHLA_BIND(backbone)
         elif model_name == "NoCNN":
             model = NoCNNModel(backbone)
         elif model_name == "NoTransformer":
@@ -46,10 +46,10 @@ def train_one_epoch(model, loader, device, criterion, optimizer):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--train_path", type=str, default="data/TransHLA_train_version_8_clean.txt")
-    parser.add_argument("--val_path", type=str, default="data/TransHLA_val_version_8_clean.txt")
-    parser.add_argument("--test_path", type=str, default="data/TransHLA_test_version_8_clean.txt")
-    parser.add_argument("--model_name", type=str, default="NoCNN", choices=["TransHLA2_0_BIND", "TransHLA2_0_IM", "NoCNN", "NoTransformer", "NoCrossAttention"])
+    parser.add_argument("--train_path", type=str, default="data/Example_train.txt")
+    parser.add_argument("--val_path", type=str, default="data/Example_val.txt")
+    parser.add_argument("--test_path", type=str, default="data/Example_test.txt")
+    parser.add_argument("--model_name", type=str, default="NoCNN", choices=["TriStageHLA_BIND", "TriStageHLA_IM", "NoCNN", "NoTransformer", "NoCrossAttention"])
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--lr", type=float, default=1e-5)
@@ -116,4 +116,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
